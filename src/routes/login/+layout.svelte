@@ -20,7 +20,7 @@
       {#if $user}
         <h2>Welcome, {$user.displayName?.split(" ")[0]}.</h2>
         <button
-          class="btn bg-primary-500 text-primary-50 hover:bg-primary-400 w-full"
+          class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-full"
           on:click={() => signOut(auth)}
         >
           Sign out
