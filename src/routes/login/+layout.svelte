@@ -1,7 +1,17 @@
 <script lang="ts">
-  import { auth, user } from "$lib/firebase";
+  import { auth, db, user } from "$lib/firebase";
   import { Stepper, Step } from "@skeletonlabs/skeleton";
   import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+  import AuthCheck from "$lib/components/AuthCheck.svelte";
+  import { doc, getDoc, writeBatch } from "firebase/firestore";
+
+  let isUserLoggedIn = false;
+  $: isUserLoggedIn = $user ? true : false;
+
+  let username = "";
+  let loading = false;
+  let isAvailable = false;
+  let debounceTimer: NodeJS.Timeout;
 
   async function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
@@ -9,8 +19,20 @@
     console.log(user);
   }
 
-  let isUserLoggedIn = false;
-  $: isUserLoggedIn = $user ? true : false;
+  async function checkAvailability() {
+    clearTimeout(debounceTimer);
+    isAvailable = false;
+    loading = true;
+    debounceTimer = setTimeout(async () => {
+      console.log("Checking availability for", username);
+      const ref = doc(db, "usernames", username);
+      const exists = await getDoc(ref).then((doc) => doc.exists());
+      isAvailable = !exists;
+      loading = false;
+    }, 500);
+  }
+
+  async function confirmUsername() {}
 </script>
 
 <div class="flex justify-center items-center h-screen">
@@ -36,7 +58,21 @@
     </Step>
     <Step>
       <svelte:fragment slot="header">Username</svelte:fragment>
-      (content)
+      <AuthCheck>
+        <h2>Choose a username</h2>
+        <form on:submit|preventDefault={confirmUsername}>
+          <input
+            type="text"
+            placeholder="username"
+            bind:value={username}
+            on:input={checkAvailability}
+          />
+          <p>{isAvailable ? "Available" : "Unavailable"}</p>
+          <button type="submit" disabled={!isAvailable || loading}>
+            {loading ? "Loading..." : "Choose"}
+          </button>
+        </form>
+      </AuthCheck>
     </Step>
     <Step>
       <svelte:fragment slot="header">Photo</svelte:fragment>
