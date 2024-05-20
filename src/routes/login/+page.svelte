@@ -2,7 +2,6 @@
   import { auth, db, user } from "$lib/firebase";
   import { Stepper, Step } from "@skeletonlabs/skeleton";
   import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-  import AuthCheck from "$lib/components/AuthCheck.svelte";
   import { doc, getDoc, writeBatch } from "firebase/firestore";
 
   let isUserLoggedIn = false;
@@ -58,19 +57,17 @@
     </Step>
     <Step>
       <svelte:fragment slot="header">Username</svelte:fragment>
-      <AuthCheck>
-        <h2>Choose a username</h2>
-        <form on:submit|preventDefault={confirmUsername}>
-          <input
-            type="text"
-            placeholder="username"
-            bind:value={username}
-            on:input={checkAvailability}
-          />
-          <button type="submit" disabled={!isAvailable || loading}/>
-          {loading ? "Loading..." : isAvailable ? "Available" : "Unavailable"}
-        </form>
-      </AuthCheck>
+      <h2>Choose a username</h2>
+      <form on:submit|preventDefault={confirmUsername}>
+        <input
+          type="text"
+          placeholder="username"
+          bind:value={username}
+          on:input={checkAvailability}
+        />
+        <button type="submit" disabled={!isAvailable || loading} />
+        {loading ? "Loading..." : isAvailable ? "Available" : "Unavailable"}
+      </form>
     </Step>
     <Step>
       <svelte:fragment slot="header">Photo</svelte:fragment>
