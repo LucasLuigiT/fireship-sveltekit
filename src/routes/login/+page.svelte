@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { auth, db, user } from "$lib/firebase";
+  import { auth, db, user, userData } from "$lib/firebase";
   import { Stepper, Step } from "@skeletonlabs/skeleton";
   import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
   import { doc, getDoc, writeBatch } from "firebase/firestore";
@@ -81,44 +81,50 @@
       {/if}
     </Step>
     <Step>
-      <svelte:fragment slot="header">Username</svelte:fragment>
-      <h2>Choose a username</h2>
-      <form on:submit|preventDefault={confirmUsername}>
-        <input
-          type="text"
-          placeholder="username"
-          bind:value={username}
-          on:input={checkAvailability}
-          class:input-error={!isValid && isTouched}
-          class:input-warning={isTaken}
-          class:input-success={isAvailable && isValid && !loading}
-        />
-        <div class="my-4 min-h-16 px-8 w-full">
-          {#if loading && isTouched && username.length > 0}
-            <p class="text-secondary">
-              Checking availability of @{username}...
-            </p>
-          {/if}
+      <svelte:fragment slot="header">Username</svelte:fragment>  
+      {#if $userData?.username}
+        <p>
+          You already have a username: <strong>@{$userData.username}</strong>
+        </p>
+      {:else}
+        <h2>Choose a username</h2>
+        <form on:submit|preventDefault={confirmUsername}>
+          <input
+            type="text"
+            placeholder="username"
+            bind:value={username}
+            on:input={checkAvailability}
+            class:input-error={!isValid && isTouched}
+            class:input-warning={isTaken}
+            class:input-success={isAvailable && isValid && !loading}
+          />
+          <div class="my-4 min-h-16 px-8 w-full">
+            {#if loading && isTouched && username.length > 0}
+              <p class="text-secondary">
+                Checking availability of @{username}...
+              </p>
+            {/if}
 
-          {#if !isValid && isTouched && !loading}
-            <p class="text-error text-sm">
-              must be 3-16 characters long, alphanumeric only
-            </p>
-          {/if}
+            {#if !isValid && isTouched && !loading}
+              <p class="text-error text-sm">
+                must be 3-16 characters long, alphanumeric only
+              </p>
+            {/if}
 
-          {#if isValid && !isAvailable && !loading}
-            <p class="text-warning text-sm">
-              @{username} is not available
-            </p>
-          {/if}
+            {#if isValid && !isAvailable && !loading}
+              <p class="text-warning text-sm">
+                @{username} is not available
+              </p>
+            {/if}
 
-          {#if isAvailable && isValid && !loading}
-            <button class="btn btn-success"
-              >Confirm username @{username}
-            </button>
-          {/if}
-        </div>
-      </form>
+            {#if isAvailable && isValid && !loading}
+              <button class="btn btn-success"
+                >Confirm username @{username}
+              </button>
+            {/if}
+          </div>
+        </form>
+      {/if}
     </Step>
     <Step>
       <svelte:fragment slot="header">Photo</svelte:fragment>

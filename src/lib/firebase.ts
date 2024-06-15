@@ -1,9 +1,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-import { writable } from "svelte/store";
+import { derived, writable, type Readable } from "svelte/store";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -46,3 +46,66 @@ function userStore() {
 }
 
 export const user = userStore();
+
+/**
+ * Creates a document store for a specific path in Firestore.
+ * The document store allows subscribing to changes in real-time and provides the document reference and ID.
+ *
+ * @template T - The type of data stored in the document.
+ * @param {string} path - The path to the document in Firestore.
+ * @returns {Object} - An object containing the subscription, document reference, and document ID.
+ */
+export function docStore<T>(
+    path: string,
+) {
+    let unsubscribe: () => void;
+    // reference to a document in Firestore
+    const docRef = doc(db, path);
+    const { subscribe } = writable<T | null>(null, (set) => {
+        // listen to the document for changes in real-time
+        // and update the store
+        unsubscribe = onSnapshot(docRef, (snapshot) => {
+            set((snapshot.data() as T) ?? null);
+        });
+        // return the unsubscribe function to stop listening
+        return () => unsubscribe();
+    });
+
+    return {
+        /**
+         * Subscribe to changes in the document store.
+         *
+         * @param {Function} run - The callback function to be executed when the document changes.
+         * @param {Function} invalidate - The callback function to be executed when the subscription is invalidated.
+         * @returns {Function} - The unsubscribe function to stop listening to changes.
+         */
+        subscribe,
+        /**
+         * The reference to the document in Firestore.
+         *
+         * @type {Object}
+         */
+        ref: docRef,
+        /**
+         * The ID of the document.
+         *
+         * @type {string}
+         */
+        id: docRef.id,
+    };
+}
+
+interface UserData {
+    username: string;
+    bio: string;
+    photoURL: string;
+    links: any[];
+}
+
+export const userData: Readable<UserData | null> = derived(user, ($user, set) => {
+    if ($user) {
+        return docStore<UserData>(`users/${$user.uid}`).subscribe(set);
+    } else {
+        set(null);
+    }
+});  
