@@ -2,20 +2,18 @@
   import { auth, user, userData } from "$lib/firebase";
   import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 
-  let hasUsername = false;
+  let loading = false;
 
   function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async function signInWithGoogle() {
+    loading = true;
     const provider = new GoogleAuthProvider();
-    const _ = await signInWithPopup(auth, provider);
-    $userData;
-    await sleep(5000);
-    if ($userData?.username) {
-      hasUsername = true;
-    }
+    await signInWithPopup(auth, provider);
+    await sleep(2000);
+    loading = false;
   }
 </script>
 
@@ -50,19 +48,28 @@
       </svg>
       <span>Sign in with Google</span>
     </button>
-  {:else if $userData?.username}
-    <div>
-      <p>Welcome back @{$userData.username}!</p>
-      <button
-        class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-full"
-        on:click={() => signOut(auth)}
-      >
-        Sign out
-      </button>
-    </div>
-  {:else if hasUsername}
-    <p>pick username</p>
-  {:else}
+  {:else if loading}
     <p>loading...</p>
+  {:else if !loading}
+    {#if $userData}
+      <div>
+        <p>Welcome, {$userData.username}.</p>
+        <button
+          class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-full"
+          on:click={() => signOut(auth)}
+        >
+          Sign out
+        </button>
+      </div>
+    {:else}
+      <div>
+        <button
+          class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-50"
+          on:click={() => window.location.href = "/loginNew/username"}
+        >
+          Pick a username
+        </button>
+      </div>
+    {/if}
   {/if}
 </div>
