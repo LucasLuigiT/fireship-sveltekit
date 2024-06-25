@@ -44,8 +44,10 @@
       ],
     });
     await batch.commit();
+    let profileUrl = `/${username}`;
     username = "";
     isAvailable = false;
+    window.location.href = profileUrl;
   }
 </script>
 

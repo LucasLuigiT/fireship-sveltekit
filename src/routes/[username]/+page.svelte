@@ -1,8 +1,15 @@
 <script lang="ts">
-  import UserLink from "$lib/components/UserLink.svelte";
+  import { auth, user } from "$lib/firebase";
+  import { signOut } from "firebase/auth";
   import type { PageData } from "./$types";
+  import UserLink from "$lib/components/UserLink.svelte";
 
   export let data: PageData;
+
+  async function signOutHandler(auth: any) {
+    await signOut(auth);
+    window.location.href = "/loginNew";
+  }
 </script>
 
 <svelte:head>
@@ -28,4 +35,12 @@
       <UserLink {...item} />
     {/each}
   </ul>
+  {#if $user}
+    <button
+      class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-full"
+      on:click={() => signOutHandler(auth)}
+    >
+      Sign out
+    </button>
+  {/if}
 </main>

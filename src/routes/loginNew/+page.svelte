@@ -53,13 +53,8 @@
   {:else if !loading}
     {#if $userData}
       <div>
-        <p>Welcome, {$userData.username}.</p>
-        <button
-          class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-full"
-          on:click={() => signOut(auth)}
-        >
-          Sign out
-        </button>
+        <p>Welcome, <b>@{$userData.username}</b>.</p>
+        <a class="block card p-4 w-40 text-center" href="/{$userData.username}">Go to your profile</a>
       </div>
     {:else}
       <div>
