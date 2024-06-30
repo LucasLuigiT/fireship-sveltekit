@@ -1,6 +1,6 @@
 <script lang="ts">
   import { auth, user, userData } from "$lib/firebase";
-  import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+  import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
   let loading = false;
 
@@ -11,7 +11,15 @@
   async function signInWithGoogle() {
     loading = true;
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    const credential = await signInWithPopup(auth, provider);
+    const idToken = await credential.user.getIdToken();
+    const _ = await fetch("/api/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ idToken }),
+    });
     await sleep(2000);
     loading = false;
   }
@@ -54,13 +62,15 @@
     {#if $userData}
       <div>
         <p>Welcome, <b>@{$userData.username}</b>.</p>
-        <a class="block card p-4 w-40 text-center" href="/{$userData.username}">Go to your profile</a>
+        <a class="block card p-4 w-40 text-center" href="/{$userData.username}"
+          >Go to your profile</a
+        >
       </div>
     {:else}
       <div>
         <button
           class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-50"
-          on:click={() => window.location.href = "/loginNew/username"}
+          on:click={() => (window.location.href = "/loginNew/username")}
         >
           Pick a username
         </button>

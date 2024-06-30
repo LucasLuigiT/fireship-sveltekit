@@ -6,7 +6,8 @@
 
   export let data: PageData;
 
-  async function signOutHandler(auth: any) {
+  async function signOutSSR(auth: any) {
+    await fetch("/api/signin", { method: "DELETE" });
     await signOut(auth);
     window.location.href = "/loginNew";
   }
@@ -38,7 +39,7 @@
   {#if $user}
     <button
       class="btn bg-warning-500 text-surface-500 hover:bg-warning-400 hover:text-surface-600 w-full"
-      on:click={() => signOutHandler(auth)}
+      on:click={() => signOutSSR(auth)}
     >
       Sign out
     </button>
